@@ -50,6 +50,12 @@ func (cfg *apiConfig) mux() *http.ServeMux {
 	mux.HandleFunc("GET /v1/readiness", requestReadiness)
 	mux.HandleFunc("GET /v1/error", requestError)
 	mux.HandleFunc("POST /v1/users", cfg.createUser)
+	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.getUsers))
+	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.createRSSFeed))
+	mux.HandleFunc("GET /v1/feeds", cfg.getRSSFeeds)
+	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.followFeed))
+	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowId}", cfg.middlewareAuth(cfg.unfollowFeed))
+	mux.HandleFunc("GET /v1/feed_follows", cfg.middlewareAuth(cfg.getFeedFollows))
 
 	return mux
 

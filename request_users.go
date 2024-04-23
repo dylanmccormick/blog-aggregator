@@ -40,8 +40,13 @@ func (cfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("ERROR: unable to create user in db. user: %v", createUser)
 		respondWithError(w, 500, "Internal Server Error")
+		return
 	}
 
 	respondWithJSON(w, 200, user)
 
+}
+
+func (cfg *apiConfig) getUsers(w http.ResponseWriter, r *http.Request, user database.User) {
+	respondWithJSON(w, 200, user)
 }
