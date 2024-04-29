@@ -28,6 +28,8 @@ func main() {
 	cfg := apiConfig{
 		dbQueries,
 	}
+	log.Printf("Running feed worker\n")
+	go cfg.feedWorker(3)
 
 	mux := cfg.mux()
 
