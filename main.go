@@ -58,6 +58,7 @@ func (cfg *apiConfig) mux() *http.ServeMux {
 	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.followFeed))
 	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowId}", cfg.middlewareAuth(cfg.unfollowFeed))
 	mux.HandleFunc("GET /v1/feed_follows", cfg.middlewareAuth(cfg.getFeedFollows))
+	mux.HandleFunc("GET /v1/posts", cfg.middlewareAuth(cfg.getPostsByUser))
 
 	return mux
 

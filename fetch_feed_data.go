@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/dylanmccormick/blog-aggregator/internal/database"
+	"github.com/google/uuid"
 )
 
 type Rss struct {
@@ -42,10 +45,7 @@ func fetchDataFromFeed(url string) Rss {
 	if err != nil {
 		log.Fatalf("ERROR Unmarshaling %v\n", err)
 	}
-	fmt.Printf("BLOG NAME: %v", v.Channel.Title)
-	for i, post := range v.Channel.Items {
-		fmt.Printf("Number: %v, Title: %v\n", i, post.Title)
-	}
+	log.Printf("Fetching posts for url: %v", url)
 	return v
 }
 
@@ -63,13 +63,31 @@ func (cfg *apiConfig) feedWorker(n int) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				fetchDataFromFeed(feed.Url)
+				v := fetchDataFromFeed(feed.Url)
+
+				for _, post := range v.Channel.Items {
+					input := database.CreatePostParams{
+						ID:        uuid.New(),
+						CreatedAt: time.Now(),
+						UpdatedAt: time.Now(),
+						Title:     post.Title,
+						Url:       post.Link,
+						Description: sql.NullString{
+							String: post.Description,
+							Valid:  (post.Description != ""),
+						},
+						PublishedAt: sql.NullTime{},
+						FeedID:      feed.ID,
+					}
+					cfg.DB.CreatePost(context.TODO(), input)
+
+				}
 				log.Printf("Fetching feed from %v\n", feed.Url)
 			}()
 		}
 
 		wg.Wait()
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(300 * time.Second)
 	}
 }
